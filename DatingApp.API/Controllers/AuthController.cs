@@ -42,32 +42,36 @@ namespace DatingApp.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserForRegisterDto userForRegisterDto)
         {
-            var userFromRepo = await _repo.Login(userForRegisterDto.Username.ToLower(), userForRegisterDto.Password);
+           
+           
+                var userFromRepo = await _repo.Login(userForRegisterDto.Username.ToLower(), userForRegisterDto.Password);
 
-            if(userFromRepo == null)
-                return Unauthorized();
+                if(userFromRepo == null)
+                    return Unauthorized();
 
-           var claims = new[]{
-               new Claim(ClaimTypes.NameIdentifier, userFromRepo.Id.ToString()),
-               new Claim(ClaimTypes.Name, userFromRepo.Username)
+                var claims = new[]{
+                    new Claim(ClaimTypes.NameIdentifier, userFromRepo.Id.ToString()),
+                    new Claim(ClaimTypes.Name, userFromRepo.Username)
 
-           };
+                };
 
-           var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value));
+                var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature)    ;
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature)    ;
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(1),
-                SigningCredentials = creds
-            };
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(claims),
+                    Expires = DateTime.Now.AddDays(1),
+                    SigningCredentials = creds
+                };
 
-            var tokenHandler = new JwtSecurityTokenHandler();
+                var tokenHandler = new JwtSecurityTokenHandler();
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return Ok(new{token = tokenHandler.WriteToken(token)});
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                return Ok(new{token = tokenHandler.WriteToken(token)});
+         
+            
 
         }
     }
